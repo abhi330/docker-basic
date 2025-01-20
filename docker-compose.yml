@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: new
+    ports:
+      - "3307:3306"
+    networks:
+      - my-network
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  customer-service:
+    build:
+      context: ./customer-service
+    image: abhilashmedaboina/dockerone:customer-service
+    container_name: customer-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/new
+    ports:
+      - "9001:9001"
+    networks:
+      - my-network
+    depends_on:
+      - mysql-db
+    restart: always
+
+  account-management:
+    build:
+      context: ./account-management
+    image: abhilashmedaboina/dockerone:account-management
+    container_name: account-management
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/new
+    ports:
+      - "9002:9002"
+    networks:
+      - my-network
+    depends_on:
+      - mysql-db
+    restart: always
+
+networks:
+  my-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
